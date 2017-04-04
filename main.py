@@ -138,37 +138,41 @@ class XMLParser:
 """ =========================== """
 
 if __name__ == '__main__': 
-    print('preConfigLoad')
+    
+    """ =========================== """    
+    """ LOAD ALREADY PROCESSED DATA """
+    """ =========================== """
+
+    batchTable = pd.read_csv('in/tables/csobBatch.csv')
+    alreadyProcessedZipfiles = pd.read_csv('in/tables/CSOB_alreadyProcessedZipFiles.csv')
+    
+    """ =========================== """
+    """ KEBOOLA STUFF """
+    """ =========================== """
+    
     cfg = docker.Config()
     parameters = cfg.get_parameters()
     folderNames = parameters.get('folderNames')
-    ### Keboola adjustments must be made        
-    #os.chdir('C:/Users/Milan/Documents/Liftago/KBC/Python/data/in/files/CSOB_batches')
-    gauth = GoogleAuth(settings_file='/data/in/files/253425786_settings.yaml')
-#    gauth.LocalWebserverAuth() # Creates local webserver and auto handles authentication.
+    gauth = GoogleAuth(settings_file=parameters.get('pathToFile'))
     drive = GoogleDrive(gauth)
-    ###
     
     """ =========================== """
-    """    GOOGLE DRIVE DEFS    """
+    """      FILL THE DATAFRAME     """
     """ =========================== """
-    # alreadyExtractedXML2CSV = [i.split('\\')[1].split('_')[0] for i in glob.glob('csv/*.csv')]
-    # Name of folders with zipfiles (aka '../FOLDER_TO_LOOKAT/zipfiles'). 
-    # EXACT NAMES REQUIRED !!!
-    # NO DUPLICATE NAMES !!!
-    #if folderNames:
-    #    FOLDERS_TO_LOOKAT = list(folderNames)
-    #else:
-    FOLDERS_TO_LOOKAT = ['CSOB AM 2016','CSOB AM 2017'] 
-    
+        
     finalDataFrame = None
-    
+        
+    if folderNames:
+        FOLDERS_TO_LOOKAT = list(folderNames)
+    else:
+        FOLDERS_TO_LOOKAT = ['CSOB AM 2016','CSOB AM 2017'] 
+       
     for folderToLookAt in FOLDERS_TO_LOOKAT:
         driveFilesList = drive.ListFile({'q':"mimeType='application/vnd.google-apps.folder' and title='{}' and trashed=false".format(folderToLookAt)}).GetList()                        
         folderId = driveFilesList[0]['id']
         zipfilesInFolder = drive.ListFile({'q':"'{}' in parents".format(folderId)}).GetList()
-        for zf in zipfilesInFolder[:2]:
-            if 'zip' in zf['title'].lower():
+        for zf in zipfilesInFolder:
+            if ('zip' in zf['title'].lower()) & (zf['title'] not in alreadyProcessedZipfiles['name'].tolist()) :
                 print('title: {}'.format(zf['title']))
                 toUnzip = drive.CreateFile({'id':zf['id']})
                 toUnzipStringContent = toUnzip.GetContentString(encoding='cp862')
@@ -191,6 +195,25 @@ if __name__ == '__main__':
                 pass
             
     try:
-        finalDataFrame.to_csv('out/tables/parsedBatch.csv',index=None)
+        """ =========================== """
+        """      CONCAT NEW WITH OLD    """
+        """ =========================== """
+        
+        outputFrame = pd.concat([batchTable,finalDataFrame])
+        outputFrame.drop_duplicates(subset=['merchant_header.type', 'parentTag', 'merchant_header.merchant_id',
+       'merchant_header.merchant_name', 'merchant_header.firm_identificator',
+       'merchant_header.bank_account', 'merchant_header.bank_code',
+       'merchant_header.transaction_currency',
+       'merchant_header.account_currency', 'transaction.type',
+       'transaction.terminal_id', 'transaction.auth_code', 'transaction.date',
+       'transaction.time', 'transaction.invoice_number',
+       'transaction.variable_symbol', 'transaction.card_number',
+       'transaction.brutto_transaction_currency',
+       'transaction.brutto_account_currency', 'transaction.brutto_CRDB',
+       'transaction.IF', 'transaction.AF', 'transaction.fee',
+       'transaction.netto', 'transaction.netto_CRDB', 'transaction.cashback',
+       'transaction.cashback_CRDB'],inplace=True)
+    
+        outputFrame.to_csv('out/tables/parsedBatch.csv',index=None)
     except AttributeError:
         pass
