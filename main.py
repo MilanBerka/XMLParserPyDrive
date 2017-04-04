@@ -156,10 +156,10 @@ if __name__ == '__main__':
     # Name of folders with zipfiles (aka '../FOLDER_TO_LOOKAT/zipfiles'). 
     # EXACT NAMES REQUIRED !!!
     # NO DUPLICATE NAMES !!!
-    if folderNames:
-        FOLDERS_TO_LOOKAT = list(folderNames)
-    else:
-        FOLDERS_TO_LOOKAT = ['CSOB AM 2016','CSOB AM 2017'] 
+    #if folderNames:
+    #    FOLDERS_TO_LOOKAT = list(folderNames)
+    #else:
+    FOLDERS_TO_LOOKAT = ['CSOB AM 2016','CSOB AM 2017'] 
     
     finalDataFrame = None
     
