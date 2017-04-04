@@ -191,6 +191,6 @@ if __name__ == '__main__':
                 pass
             
     try:
-        finalDataFrame.to_csv('data/out/tables/parsedBatch.csv',index=None)
+        finalDataFrame.to_csv('out/tables/parsedBatch.csv',index=None)
     except AttributeError:
         pass
