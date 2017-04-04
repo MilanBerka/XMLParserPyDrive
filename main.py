@@ -143,7 +143,7 @@ if __name__ == '__main__':
     folderNames = parameters.get('folderNames')
     ### Keboola adjustments must be made        
     #os.chdir('C:/Users/Milan/Documents/Liftago/KBC/Python/data/in/files/CSOB_batches')
-    gauth = GoogleAuth()
+    gauth = GoogleAuth(parameters.get('path_to_settings')
 #    gauth.LocalWebserverAuth() # Creates local webserver and auto handles authentication.
     drive = GoogleDrive(gauth)
     ###
@@ -166,7 +166,7 @@ if __name__ == '__main__':
         driveFilesList = drive.ListFile({'q':"mimeType='application/vnd.google-apps.folder' and title='{}' and trashed=false".format(folderToLookAt)}).GetList()                        
         folderId = driveFilesList[0]['id']
         zipfilesInFolder = drive.ListFile({'q':"'{}' in parents".format(folderId)}).GetList()
-        for zf in zipfilesInFolder:
+        for zf in zipfilesInFolder[:2]:
             if 'zip' in zf['title'].lower():
                 print('title: {}'.format(zf['title']))
                 toUnzip = drive.CreateFile({'id':zf['id']})
