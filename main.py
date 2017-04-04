@@ -143,7 +143,7 @@ if __name__ == '__main__':
     folderNames = parameters.get('folderNames')
     ### Keboola adjustments must be made        
     #os.chdir('C:/Users/Milan/Documents/Liftago/KBC/Python/data/in/files/CSOB_batches')
-    gauth = GoogleAuth(parameters.get('path_to_settings'))
+    gauth = GoogleAuth(settings_file='/data/in/files/253414451_settings.yaml')
 #    gauth.LocalWebserverAuth() # Creates local webserver and auto handles authentication.
     drive = GoogleDrive(gauth)
     ###
